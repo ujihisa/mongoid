@@ -85,6 +85,8 @@ RSpec.describe 'embedded associations with the same stored name' do
     expect(contents_of(stored.dig('group', 'sections'))).to eq [ 'group-updated' ]
   end
 
+  # This fails before delayed atomic paths are normalized: the new child's
+  # sections are merged into the root sections array.
   it 'does not merge a new child into the parent association' do
     root_without_group = SharedNameEmbeddedAssociationsSpec::Root.new
     root_without_group.sections = [ SharedNameEmbeddedAssociationsSpec::Section.new(content: 'root-original') ]
