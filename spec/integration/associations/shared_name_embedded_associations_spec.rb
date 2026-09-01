@@ -47,18 +47,14 @@ RSpec.describe 'embedded associations with the same stored name' do
   # fails before delayed atomic paths are normalized because the new child's
   # sections are merged into the root sections array.
   it 'does not merge a new child into the parent association' do
-    root_without_group = SharedNameEmbeddedAssociationsSpec::Root.new
-    root_without_group.sections = [ SharedNameEmbeddedAssociationsSpec::Section.new(content: 'root-original') ]
-    root_without_group.save!
-
-    reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root_without_group.id)
+    reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
     reloaded.attributes = {
       sections: [ { _id: reloaded.sections.first.id, content: 'root-updated' } ],
       group: { sections: [ { content: 'group-new' } ] }
     }
     reloaded.save!
 
-    stored = SharedNameEmbeddedAssociationsSpec::Root.collection.find(_id: root_without_group.id).first
+    stored = stored_document
     expect(contents_of(stored['sections'])).to eq [ 'root-updated' ]
     expect(contents_of(stored.dig('group', 'sections'))).to eq [ 'group-new' ]
   end
