@@ -28,12 +28,15 @@ end
 
 RSpec.describe 'embedded associations with the same stored name' do
   let!(:root) do
-    SharedNameEmbeddedAssociationsSpec::Root.create!(
-      sections: [ SharedNameEmbeddedAssociationsSpec::Section.new(content: 'root-original') ],
-      group: SharedNameEmbeddedAssociationsSpec::Group.new(
-        sections: [ SharedNameEmbeddedAssociationsSpec::Section.new(content: 'group-original') ]
-      )
-    )
+    group = SharedNameEmbeddedAssociationsSpec::Group.new
+    group.attributes = {
+      sections: [ { content: 'group-original' } ]
+    }
+    root = SharedNameEmbeddedAssociationsSpec::Root.new
+    root.sections = [ SharedNameEmbeddedAssociationsSpec::Section.new(content: 'root-original') ]
+    root.group = group
+    root.save!
+    root
   end
 
   def stored_document
@@ -44,12 +47,26 @@ RSpec.describe 'embedded associations with the same stored name' do
     sections.to_a.map { |section| section['content'] }
   end
 
+  def reproduce_relative_delayed_atomic_path(document)
+    # Mongoid 9.1 normally records this path absolutely. Recreate the
+    # relative buffer produced by the failing nested assignment so this spec
+    # remains a regression test for the collision.
+    document.sections.each do |section|
+      section.new_record = false
+      section.changed_attributes.clear
+    end
+    sets = document.delayed_atomic_sets.delete('group.sections')
+    document._base.delayed_atomic_sets.delete('group.sections')
+    document.delayed_atomic_sets['sections'] = sets
+  end
+
   it 'does not merge parent and child sections on simultaneous assignment' do
     reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
     reloaded.attributes = {
-      sections: [ { content: 'root-updated' } ],
-      group: { sections: [ { content: 'group-updated' } ] }
+      sections: [ { _id: reloaded.sections.first.id, content: 'root-updated' } ],
+      group: { sections: [ { _id: reloaded.group.sections.first.id, content: 'group-updated' } ] }
     }
+    reproduce_relative_delayed_atomic_path(reloaded.group)
     reloaded.save!
 
     stored = stored_document
@@ -60,8 +77,9 @@ RSpec.describe 'embedded associations with the same stored name' do
   it 'does not overwrite parent sections on child-only assignment' do
     reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
     reloaded.attributes = {
-      group: { sections: [ { content: 'group-only' } ] }
+      group: { sections: [ { _id: reloaded.group.sections.first.id, content: 'group-only' } ] }
     }
+    reproduce_relative_delayed_atomic_path(reloaded.group)
     reloaded.save!
 
     stored = stored_document
@@ -73,8 +91,9 @@ RSpec.describe 'embedded associations with the same stored name' do
     reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
     reloaded.attributes = {
       sections: [],
-      group: { sections: [ { content: 'group-updated' } ] }
+      group: { sections: [ { _id: reloaded.group.sections.first.id, content: 'group-updated' } ] }
     }
+    reproduce_relative_delayed_atomic_path(reloaded.group)
     reloaded.save!
 
     stored = stored_document
