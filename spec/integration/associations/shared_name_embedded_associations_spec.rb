@@ -62,4 +62,30 @@ RSpec.describe 'embedded associations with the same stored name' do
     expect(contents_of(stored['sections'])).to eq [ 'root-updated' ]
     expect(contents_of(stored.dig('group', 'sections'))).to eq [ 'group-new' ]
   end
+
+  it 'does not copy a new child into an empty parent association' do
+    reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
+    reloaded.attributes = {
+      sections: [],
+      group: { sections: [ { content: 'group-new' } ] }
+    }
+    reloaded.save!
+
+    stored = stored_document
+    expect(contents_of(stored['sections'] || [])).to eq []
+    expect(contents_of(stored.dig('group', 'sections'))).to eq [ 'group-new' ]
+  end
+
+  it 'does not merge a new child when retaining the parent content' do
+    reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
+    reloaded.attributes = {
+      sections: [ { _id: reloaded.sections.first.id, content: 'root-original' } ],
+      group: { sections: [ { content: 'group-new' } ] }
+    }
+    reloaded.save!
+
+    stored = stored_document
+    expect(contents_of(stored['sections'])).to eq [ 'root-original' ]
+    expect(contents_of(stored.dig('group', 'sections'))).to eq [ 'group-new' ]
+  end
 end
