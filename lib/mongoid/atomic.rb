@@ -355,7 +355,8 @@ module Mongoid
 
       prefix = "#{position}."
       sets.each_with_object({}) do |(key, value), absolute_sets|
-        absolute_key = key.to_s.start_with?(prefix) ? key : "#{prefix}#{key}"
+        key = key.to_s
+        absolute_key = key.start_with?(prefix) ? key : "#{prefix}#{key}"
         absolute_sets[absolute_key] = value
       end
     end

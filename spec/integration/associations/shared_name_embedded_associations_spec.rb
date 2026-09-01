@@ -48,9 +48,8 @@ RSpec.describe 'embedded associations with the same stored name' do
   end
 
   def reproduce_relative_delayed_atomic_path(document)
-    # Mongoid 9.1 normally records this path absolutely. Recreate the
-    # relative buffer produced by the failing nested assignment so this spec
-    # remains a regression test for the collision.
+    # The current public assignment path records this key absolutely. Recreate
+    # the relative buffer produced by the failing path to test the collision.
     document.sections.each do |section|
       section.new_record = false
       section.changed_attributes.clear

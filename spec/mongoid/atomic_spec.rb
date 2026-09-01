@@ -402,6 +402,15 @@ describe Mongoid::Atomic do
 
         expect(address.send(:absolute_delayed_atomic_sets, modifiers, address)).to eq({})
       end
+
+      it 'does not change the delayed sets it normalizes' do
+        delayed_sets = { sections: [ { 'content' => 'nested' } ] }
+        address.delayed_atomic_sets.merge!(delayed_sets)
+
+        address.send(:absolute_delayed_atomic_sets, Mongoid::Atomic::Modifiers.new, address)
+
+        expect(address.delayed_atomic_sets).to eq(delayed_sets)
+      end
     end
 
     context 'when adding embedded documents with nil ids' do
