@@ -371,6 +371,39 @@ describe Mongoid::Atomic do
       end
     end
 
+    context 'when normalizing delayed atomic sets' do
+      let!(:person) do
+        Person.create!
+      end
+
+      let!(:address) do
+        person.addresses.create!
+      end
+
+      it 'prefixes a descendant delayed set with its atomic position' do
+        address.delayed_atomic_sets['sections'] = [ { 'content' => 'nested' } ]
+
+        expect(address.send(:absolute_delayed_atomic_sets, Mongoid::Atomic::Modifiers.new, address)).to eq(
+          'addresses.0.sections' => [ { 'content' => 'nested' } ]
+        )
+      end
+
+      it 'does not normalize delayed sets for a new document' do
+        new_address = person.addresses.build
+        new_address.delayed_atomic_sets['sections'] = [ { 'content' => 'nested' } ]
+
+        expect(new_address.send(:absolute_delayed_atomic_sets, Mongoid::Atomic::Modifiers.new, new_address)).to eq({})
+      end
+
+      it 'does not normalize delayed sets covered by a wholesale set' do
+        address.delayed_atomic_sets['sections'] = [ { 'content' => 'nested' } ]
+        modifiers = Mongoid::Atomic::Modifiers.new
+        modifiers.set('addresses.0' => address.attributes)
+
+        expect(address.send(:absolute_delayed_atomic_sets, modifiers, address)).to eq({})
+      end
+    end
+
     context 'when adding embedded documents with nil ids' do
       let(:account) { Account.create!(name: 'acc') }
 
