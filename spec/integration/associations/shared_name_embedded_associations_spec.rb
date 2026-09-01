@@ -15,17 +15,13 @@ module SharedNameEmbeddedAssociationsSpec
     include Mongoid::Document
 
     embedded_in :root
-    embeds_many :sections,
-                class_name: 'SharedNameEmbeddedAssociationsSpec::Section',
-                store_as: :sections
+    embeds_many :sections, class_name: 'SharedNameEmbeddedAssociationsSpec::Section', store_as: :sections
   end
 
   class Root
     include Mongoid::Document
 
-    embeds_many :sections,
-                class_name: 'SharedNameEmbeddedAssociationsSpec::Section',
-                store_as: :sections
+    embeds_many :sections, class_name: 'SharedNameEmbeddedAssociationsSpec::Section', store_as: :sections
     embeds_one :group, class_name: 'SharedNameEmbeddedAssociationsSpec::Group'
   end
 end
