@@ -388,6 +388,14 @@ describe Mongoid::Atomic do
         )
       end
 
+      it 'includes normalized delayed sets in the root atomic updates' do
+        address.delayed_atomic_sets['sections'] = [ { 'content' => 'nested' } ]
+
+        expect(person.atomic_updates['$set']).to include(
+          'addresses.0.sections' => [ { 'content' => 'nested' } ]
+        )
+      end
+
       it 'does not normalize delayed sets for a new document' do
         new_address = person.addresses.build
         new_address.delayed_atomic_sets['sections'] = [ { 'content' => 'nested' } ]
