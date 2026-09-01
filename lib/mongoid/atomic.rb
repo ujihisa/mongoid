@@ -351,7 +351,10 @@ module Mongoid
       return {} if doc.new_record?
 
       prefix = "#{position}."
-      sets.transform_keys { |key| "#{prefix}#{key}" }
+      sets.transform_keys do |key|
+        key = key.to_s
+        key.start_with?(prefix) ? key : "#{prefix}#{key}"
+      end
     end
   end
 end
