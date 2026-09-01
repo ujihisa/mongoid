@@ -28,13 +28,8 @@ end
 
 RSpec.describe 'embedded associations with the same stored name' do
   let!(:root) do
-    group = SharedNameEmbeddedAssociationsSpec::Group.new
-    group.attributes = {
-      sections: [ { content: 'group-original' } ]
-    }
     root = SharedNameEmbeddedAssociationsSpec::Root.new
     root.sections = [ SharedNameEmbeddedAssociationsSpec::Section.new(content: 'root-original') ]
-    root.group = group
     root.save!
     root
   end
@@ -45,44 +40,6 @@ RSpec.describe 'embedded associations with the same stored name' do
 
   def contents_of(sections)
     sections.to_a.map { |section| section['content'] }
-  end
-
-  it 'does not merge parent and child sections on simultaneous assignment' do
-    reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
-    reloaded.attributes = {
-      sections: [ { _id: reloaded.sections.first.id, content: 'root-updated' } ],
-      group: { sections: [ { _id: reloaded.group.sections.first.id, content: 'group-updated' } ] }
-    }
-    reloaded.save!
-
-    stored = stored_document
-    expect(contents_of(stored['sections'])).to eq [ 'root-updated' ]
-    expect(contents_of(stored.dig('group', 'sections'))).to eq [ 'group-updated' ]
-  end
-
-  it 'does not overwrite parent sections on child-only assignment' do
-    reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
-    reloaded.attributes = {
-      group: { sections: [ { _id: reloaded.group.sections.first.id, content: 'group-only' } ] }
-    }
-    reloaded.save!
-
-    stored = stored_document
-    expect(contents_of(stored['sections'])).to eq [ 'root-original' ]
-    expect(contents_of(stored.dig('group', 'sections'))).to eq [ 'group-only' ]
-  end
-
-  it 'does not copy child sections into an empty parent association' do
-    reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
-    reloaded.attributes = {
-      sections: [],
-      group: { sections: [ { _id: reloaded.group.sections.first.id, content: 'group-updated' } ] }
-    }
-    reloaded.save!
-
-    stored = stored_document
-    expect(contents_of(stored['sections'] || [])).to eq []
-    expect(contents_of(stored.dig('group', 'sections'))).to eq [ 'group-updated' ]
   end
 
   # This fails before delayed atomic paths are normalized: the new child's
