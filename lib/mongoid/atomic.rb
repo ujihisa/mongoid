@@ -335,7 +335,7 @@ module Mongoid
       mods.unset(doc.atomic_unsets)
       mods.pull(doc.atomic_pulls)
       mods.set(doc.atomic_sets)
-      mods.set(absolute_delayed_atomic_sets(mods, doc))
+      mods.set(absolute_delayed_atomic_sets(doc))
       mods.push(doc.atomic_pushes)
       mods.push(doc.atomic_array_pushes)
       mods.add_to_set(doc.atomic_array_add_to_sets)
@@ -343,34 +343,15 @@ module Mongoid
     end
 
     # Return delayed atomic sets with paths relative to the root document.
-    # Embedded documents can collect these sets before they are attached to
-    # their parent, in which case their keys are relative to that document.
-    def absolute_delayed_atomic_sets(mods, doc)
+    def absolute_delayed_atomic_sets(doc)
       sets = doc.delayed_atomic_sets
       position = doc.atomic_position
 
       return sets if position.blank?
       return {} if doc.new_record?
-      return {} if covered_by_wholesale_set?(mods, position)
 
       prefix = "#{position}."
-      sets.each_with_object({}) do |(key, value), absolute_sets|
-        key = key.to_s
-        absolute_key = key.start_with?(prefix) ? key : "#{prefix}#{key}"
-        absolute_sets[absolute_key] = value
-      end
-    end
-
-    # Determine whether the document is already covered by a complete $set.
-    def covered_by_wholesale_set?(mods, position)
-      candidates = [ mods['$set'], mods[:conflicts] && mods[:conflicts]['$set'] ].compact
-      return false if candidates.empty?
-
-      parts = position.split('.')
-      (1..parts.size).any? do |length|
-        key = parts.first(length).join('.')
-        candidates.any? { |sets| sets.key?(key) }
-      end
+      sets.transform_keys { |key| "#{prefix}#{key}" }
     end
   end
 end
