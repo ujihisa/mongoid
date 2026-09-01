@@ -47,25 +47,12 @@ RSpec.describe 'embedded associations with the same stored name' do
     sections.to_a.map { |section| section['content'] }
   end
 
-  def reproduce_relative_delayed_atomic_path(document)
-    # The current public assignment path records this key absolutely. Recreate
-    # the relative buffer produced by the failing path to test the collision.
-    document.sections.each do |section|
-      section.new_record = false
-      section.changed_attributes.clear
-    end
-    sets = document.delayed_atomic_sets.delete('group.sections')
-    document._base.delayed_atomic_sets.delete('group.sections')
-    document.delayed_atomic_sets['sections'] = sets
-  end
-
   it 'does not merge parent and child sections on simultaneous assignment' do
     reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
     reloaded.attributes = {
       sections: [ { _id: reloaded.sections.first.id, content: 'root-updated' } ],
       group: { sections: [ { _id: reloaded.group.sections.first.id, content: 'group-updated' } ] }
     }
-    reproduce_relative_delayed_atomic_path(reloaded.group)
     reloaded.save!
 
     stored = stored_document
@@ -78,7 +65,6 @@ RSpec.describe 'embedded associations with the same stored name' do
     reloaded.attributes = {
       group: { sections: [ { _id: reloaded.group.sections.first.id, content: 'group-only' } ] }
     }
-    reproduce_relative_delayed_atomic_path(reloaded.group)
     reloaded.save!
 
     stored = stored_document
@@ -92,7 +78,6 @@ RSpec.describe 'embedded associations with the same stored name' do
       sections: [],
       group: { sections: [ { _id: reloaded.group.sections.first.id, content: 'group-updated' } ] }
     }
-    reproduce_relative_delayed_atomic_path(reloaded.group)
     reloaded.save!
 
     stored = stored_document
