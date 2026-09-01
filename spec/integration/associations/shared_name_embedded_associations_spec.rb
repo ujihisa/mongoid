@@ -42,10 +42,8 @@ RSpec.describe 'embedded associations with the same stored name' do
     sections.to_a.map { |section| section['content'] }
   end
 
-  # A persisted root without a group is important here: attributes= builds the
-  # new nested group while the root sections update is still pending. This
-  # fails before delayed atomic paths are normalized because the new child's
-  # sections are merged into the root sections array.
+  # The persisted root has no group, so attributes= builds the new nested group
+  # while the root sections update is still pending.
   it 'does not merge a new child into the parent association' do
     reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
     reloaded.attributes = {

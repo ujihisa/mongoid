@@ -342,7 +342,7 @@ module Mongoid
       mods.pull_all(doc.atomic_array_pulls)
     end
 
-    # Normalize delayed atomic sets with paths relative to the root document.
+    # Keep delayed atomic sets on paths relative to the root document.
     def normalize_delayed_atomic_sets(doc)
       sets = doc.delayed_atomic_sets
       position = doc.atomic_position
