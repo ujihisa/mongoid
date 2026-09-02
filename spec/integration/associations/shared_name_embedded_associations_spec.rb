@@ -138,6 +138,9 @@ RSpec.describe 'embedded associations' do
       expect(contents_of(reloaded.sections)).to eq [ 'root-original' ]
       expect(contents_of(reloaded.group.sections)).to eq [ 'group-updated' ]
 
+      reloaded.group = nil
+      reloaded.save!
+      reloaded = SharedNameEmbeddedAssociationsSpec::Root.find(root.id)
       reloaded.attributes = {
         sections: [ { _id: reloaded.sections.first.id, content: 'root-updated' } ],
         group: { sections: [ { content: 'group-new' } ] }
