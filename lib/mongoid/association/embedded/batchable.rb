@@ -131,7 +131,8 @@ module Mongoid
         #
         # @param [ Array<Hash> ] sets The atomic sets.
         #
-        # @return [ Array<Hash> ] The atomic sets.
+        # @return [ Array<Hash> | nil ] The atomic sets, or nil if the base
+        #   document is not persisted or is not being assigned.
         def add_atomic_sets(sets)
           # New embedded documents are persisted whole by their parent with a
           # $set or $push. Their delayed association updates are redundant and
