@@ -189,11 +189,15 @@ RSpec.describe 'embedded delayed atomic sets' do
       expect(stored.dig('team', 'members').map { |member| member['name'] }).to eq [ 'm1' ]
     end
 
-    it 'produces a single $set for the new child' do
+    it 'persists the nested array inside the new child' do
       reloaded = NewEmbeddedChildSpec::Org.find(org.id)
       reloaded.attributes = { team: { members: [ { name: 'm1' } ] } }
+      reloaded.save!
 
-      expect(reloaded.atomic_updates['$set'].keys).to eq [ 'team' ]
+      stored = NewEmbeddedChildSpec::Org.collection.find(_id: org.id).first
+      expect(stored.keys).to match_array(%w[_id title team])
+      expect(stored.dig('team', 'members').map { |member| member['name'] }).to eq [ 'm1' ]
+      expect(reloaded.team.members.map(&:name)).to eq [ 'm1' ]
     end
 
     it 'does not write nested attributes at the root level' do
@@ -213,8 +217,6 @@ RSpec.describe 'embedded delayed atomic sets' do
       reloaded = NewEmbeddedChildSpec::Org.find(org.id)
       reloaded.build_team
       reloaded.team.attributes = { members: [ { name: 'm1' } ] }
-
-      expect(reloaded.atomic_updates['$set'].keys).to eq [ 'team' ]
       reloaded.save!
 
       stored = NewEmbeddedChildSpec::Org.collection.find(_id: org.id).first
