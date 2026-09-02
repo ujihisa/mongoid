@@ -131,13 +131,12 @@ module Mongoid
         #
         # @param [ Array<Hash> ] sets The atomic sets.
         #
-        # @return [ nil ]
+        # @return [ Array<Hash> ] The atomic sets.
         def add_atomic_sets(sets)
-          # A new base document is persisted whole by its parent, through a
-          # $set or $push. A delayed update for one of its associations is
-          # therefore redundant. It would also be recorded before the base is
-          # attached to its parent, making its path relative to the base
-          # instead of the root document.
+          # New embedded documents are persisted whole by their parent with a
+          # $set or $push. Their delayed association updates are redundant and
+          # are recorded before the document is attached, so their paths are
+          # relative to the document instead of the root.
           return unless _assigning? && _base.persisted?
 
           _base.delayed_atomic_sets[path].try(:clear)
