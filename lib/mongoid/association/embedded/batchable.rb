@@ -135,9 +135,10 @@ module Mongoid
         #   document is not persisted or is not being assigned.
         def add_atomic_sets(sets)
           # New embedded documents are persisted whole by their parent with a
-          # $set or $push. Their delayed association updates are redundant and
-          # are recorded before the document is attached, so their paths are
-          # relative to the document instead of the root.
+          # $set or $push. A delayed update for one of their associations is
+          # redundant whether or not the document is attached to its parent.
+          # Before attachment, its path is relative to the document instead
+          # of the root.
           return unless _assigning? && _base.persisted?
 
           _base.delayed_atomic_sets[path].try(:clear)
