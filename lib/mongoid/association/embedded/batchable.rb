@@ -131,7 +131,11 @@ module Mongoid
         #
         # @param [ Array<Hash> ] sets The atomic sets.
         def add_atomic_sets(sets)
-          return unless _assigning?
+          # A new base document is persisted whole, so a delayed update for
+          # one of its associations is redundant. It would also be recorded
+          # before the base is attached to its parent, making its path
+          # relative to the base instead of the root document.
+          return unless _assigning? && _base.persisted?
 
           _base.delayed_atomic_sets[path].try(:clear)
           _base.collect_children.each do |child|

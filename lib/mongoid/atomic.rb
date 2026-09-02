@@ -335,26 +335,11 @@ module Mongoid
       mods.unset(doc.atomic_unsets)
       mods.pull(doc.atomic_pulls)
       mods.set(doc.atomic_sets)
-      mods.set(normalize_delayed_atomic_sets(doc))
+      mods.set(doc.delayed_atomic_sets)
       mods.push(doc.atomic_pushes)
       mods.push(doc.atomic_array_pushes)
       mods.add_to_set(doc.atomic_array_add_to_sets)
       mods.pull_all(doc.atomic_array_pulls)
-    end
-
-    # Keep delayed atomic sets on paths relative to the root document.
-    def normalize_delayed_atomic_sets(doc)
-      sets = doc.delayed_atomic_sets
-      position = doc.atomic_position
-
-      return sets if position.blank?
-      return {} if doc.new_record?
-
-      prefix = "#{position}."
-      sets.transform_keys do |key|
-        key = key.to_s
-        key.start_with?(prefix) ? key : "#{prefix}#{key}"
-      end
     end
   end
 end
