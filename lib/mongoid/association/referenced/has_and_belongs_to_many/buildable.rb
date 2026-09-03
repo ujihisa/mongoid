@@ -21,13 +21,13 @@ module Mongoid
           def build(_base, object, _type = nil, selected_fields = nil)
             if query?(object)
               # Handle array of hashes from $lookup aggregation
-              if object.is_a?(Array) && object.all? { |o| o.is_a?(Hash) }
+              if object.is_a?(Array) && object.any? && object.all? { |o| o.is_a?(Hash) }
                 return object.map do |attrs|
                   Factory.execute_from_db(klass, attrs, nil, selected_fields, execute_callbacks: false)
                 end
               end
 
-              query_criteria(object)
+              query_criteria((object.is_a?(Array) && object.empty?) ? nil : object)
             else
               object.try(:dup)
             end
