@@ -108,17 +108,13 @@ describe Mongoid::Association::Referenced::HasAndBelongsToMany::Buildable do
     end
 
     context 'when provided an empty array' do
-      let!(:object) do
+      let(:object) do
         []
       end
 
-      let!(:criteria) do
-        Preference.none
-      end
-
-      it 'returns the criteria' do
+      it 'returns an empty criteria' do
         expect(documents).to be_a(Mongoid::Criteria)
-        expect(documents).to eq(criteria)
+        expect(documents.empty_and_chainable?).to be true
       end
     end
 

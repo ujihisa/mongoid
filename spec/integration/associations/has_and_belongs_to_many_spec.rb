@@ -62,17 +62,14 @@ end
 describe 'has_and_belongs_to_many associations' do
   context 'when the stored foreign-key array is empty' do
     it 'can reset and enumerate the association proxy' do
-      item = HabtmSpec::Item.create!
-      HabtmSpec::Item.collection.update_one(
-        { _id: item.id },
-        { '$set' => { color_ids: [] } }
-      )
-      item = HabtmSpec::Item.find(item.id)
-      colours = item.colors
+      item = HabtmSpec::Item.create!(color_ids: [])
+      colors = item.reload.colors
 
       expect_query(0) do
-        colours.reset
-        expect(colours.to_a).to eq []
+        colors.reset
+        expect(colors.empty?).to be true
+        expect(colors.size).to be 0
+        expect(colors.to_a).to eq []
       end
     end
   end
