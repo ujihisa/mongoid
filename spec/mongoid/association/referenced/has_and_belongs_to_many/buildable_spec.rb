@@ -107,6 +107,21 @@ describe Mongoid::Association::Referenced::HasAndBelongsToMany::Buildable do
       end
     end
 
+    context 'when provided an empty array' do
+      let!(:object) do
+        []
+      end
+
+      let!(:criteria) do
+        Preference.none
+      end
+
+      it 'returns the criteria' do
+        expect(documents).to be_a(Mongoid::Criteria)
+        expect(documents).to eq(criteria)
+      end
+    end
+
     context 'when provided a object' do
       context 'when the object is not nil' do
         let(:object) do
