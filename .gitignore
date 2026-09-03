@@ -31,4 +31,5 @@ examples
 .env
 .env.private*
 build
+.worktrees/
 rspec.xml
