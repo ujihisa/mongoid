@@ -1,5 +1,9 @@
 Draft only. This text has not been submitted to Jira.
 
+## Proposed summary
+
+Prevent stale embedded update paths after sibling removal
+
 ## Description
 
 Mongoid can write delayed updates to the wrong embedded document when an earlier sibling is removed from an `embeds_many` association before the parent is saved. The operation does not necessarily raise an error, so data in a different embedded document can be silently changed.
