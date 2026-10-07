@@ -66,7 +66,7 @@ When reindexing an embedded collection, capture the previous positions of the re
 
 Regression specs cover non-empty and empty `attributes=` replacements, `remove_attribute`, and sibling destruction through nested attributes. The reported data must remain unchanged in all non-target siblings.
 
-## Related
+## Related Mongoid tickets
 
 * Reproduction and migration context: https://github.com/quipper/monorepo/issues/181010
 * The `Atomic::Modifiers` conflicting-operator issue tracked separately in https://github.com/quipper/monorepo/issues/181078 is distinct; rebasing a stale positional path addresses the wrong-document write described here.
